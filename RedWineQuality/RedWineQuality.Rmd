@@ -1,0 +1,568 @@
+---
+title: "Rogerio Martins Benetti"
+author: "Analise de qualidade de Vinhos Vermelho"
+date: "6/30/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Carregue aqui todos os pacotes utilizados 
+# na sua analise realizada neste arquivo fonte.
+
+# Note que o parrametro "echo" foi definido como FALSE neste cÃ³digo.
+# Isso previne que o cÃ³digo apresente resultados formatados em HTML.
+# Voce deve definir echo=FALSE para todos os blocos de cÃ³digo no seu arquivo.
+
+library("ggplot2")
+library("dplyr")
+library("gridExtra")
+##library(GGally)
+##library(memisc)
+library(pander)
+library(corrplot)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Carregamento dos dados
+setwd("~/git/udacity/NDDataScientist/br-machine-learning/projects/R")
+getwd()
+rwineqa <- read.csv('wineQualityReds.csv')
+
+rwineqa$quality <- factor(rwineqa$quality, ordered = T)
+
+rwineqa$rating <- ifelse(rwineqa$quality < 5, 'ruim', ifelse(
+  rwineqa$quality < 7, 'medio', 'bom'))
+
+rwineqa$rating <- ordered(rwineqa$rating,
+                          levels = c('ruim', 'medio', 'bom'))
+str(rwineqa)
+summary(rwineqa)
+
+```
+
+# Secao de Graficos Univariados
+```{r echo=FALSE, Univariate_Plots}
+ggplot(data = rwineqa, aes(x = quality)) +
+  geom_bar(width = 1, color = 'black',fill = I('red'))
+
+ggplot(data = rwineqa, aes(x = rating)) +
+  geom_bar(width = 1, color = 'black',fill = I('purple'))
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = fixed.acidity ) ) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(4,14)),
+ggplot(data = rwineqa, aes(x = fixed.acidity)) +
+  geom_histogram(binwidth = 1, color = 'black',fill = I('purple')) + 
+  scale_x_continuous(lim = c(4,14)),ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = volatile.acidity ) ) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(0,1)),
+ggplot(data = rwineqa, aes(x = volatile.acidity)) +
+  geom_histogram(binwidth = 0.05, color = 'black',fill = I('purple')) +
+  scale_x_continuous(lim = c(0,1)), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = citric.acid )) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ),
+ggplot(data = rwineqa, aes(x = citric.acid)) +
+  geom_histogram(binwidth = 0.08, color = 'black',fill = I('purple')) +
+  scale_x_continuous(breaks = seq(0,1,0.1), lim = c(0,1)), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = residual.sugar )) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(1,8)),
+ggplot(data = rwineqa, aes(x = residual.sugar)) +
+  geom_histogram(binwidth = 0.1, color = 'black',fill = I('purple')) +
+  scale_x_continuous(lim = c(1,8)), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = chlorides )) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(0,0.25)),
+ggplot(data = rwineqa, aes(x = chlorides)) +
+  geom_histogram(binwidth = 0.01, color = 'black',fill = I('purple')) +
+  scale_x_continuous(lim = c(0,0.25)), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = free.sulfur.dioxide )) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(0,45)),
+ggplot(data = rwineqa, aes(x = free.sulfur.dioxide)) +
+  geom_histogram(binwidth = 1, color = 'black',fill = I('purple')) +
+  scale_x_continuous(breaks = seq(0,80,5), lim = c(0,45)), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = total.sulfur.dioxide )) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(0,180)),
+ggplot(data = rwineqa, aes(x = total.sulfur.dioxide)) +
+  geom_histogram(binwidth = 5, color = 'black',fill = I('purple')) +
+  scale_x_continuous(lim = c(0,180)), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = density)) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ),
+ggplot(data = rwineqa, aes(x = density)) +
+  geom_histogram(binwidth = 0.001, color = 'black',fill = I('purple')), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = pH)) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ),
+ggplot(data = rwineqa, aes(x = pH)) +
+  geom_histogram(binwidth = 0.1, color = 'black',fill = I('purple')), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = sulphates)) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(0.3,1.6)),
+ggplot(data = rwineqa, aes(x = sulphates)) +
+  geom_histogram(binwidth = 0.1, color = 'black',fill = I('purple')) +
+  scale_x_continuous(lim = c(0.3,1.6)), ncol = 2)
+
+grid.arrange(ggplot(rwineqa, aes( x = 1, y = alcohol)) + 
+               geom_jitter(alpha = 0.1 ) +
+               geom_boxplot(alpha = 0.2, color = 'red' ) +
+               scale_y_continuous(lim = c(8,14)),
+ggplot(data = rwineqa, aes(x = alcohol)) +
+  geom_histogram(binwidth = 0.1, color = 'black',fill = I('purple')) +
+  scale_x_continuous(lim = c(8,14)), ncol = 2)
+```
+
+
+# Análise Univariada
+
+### Qual é a estrutura do conjunto de dados?
+Esta estrutura apresenta 1599 linhas e 13 atributos, onde possui um atributo que fora adicionado 'rating' e um categorico 'quality', 
+os demais campos descrevem as propriedades do vinho a ser estudada, onde estes campos são todos numéricos.
+
+### Quais são os principais atributos de interesse deste conjunto de dados?
+É o atributo 'quality', o qual pretendo identificar quais fatores afetam este atributo que determina qual é a qualidade do vinho
+
+### Quais outros atributos você acha que podem lhe auxiliar na investigaçãoo destes atributos de interesse?
+
+Devido a distribuição mais normalizada, eu acredito que deve ser fixed.acidity, volatile.acidity, densidade e Ph, 
+onde último pode adicionar efeitos sobre os atributos. 
+
+### Você criou novas variáveis a partir dos atributos existentes no conjunto de dados?
+Sim, atributo rating
+
+### Dos atributos investigados, distribuições incomuns foram encontradas? Você aplicou operaçõeses nos dados para limpá-los, ajustá-los ou mudar a forma dos dados? Se sim, por que?
+Sim, foram encontrados picos de valores elevados como no atributo fixed.acidity. Para remover os outliers, fora feito um rescaling das imagens.
+
+
+
+# Seção de Gráficos Bivariados
+```{r echo=FALSE, Bivariate_Plots}
+c <- cor(
+  rwineqa %>%
+    # first we remove unwanted columns
+    dplyr::select(-X) %>%
+    dplyr::select(-rating) %>%
+    mutate(
+      # now we translate quality to a number
+      quality = as.numeric(quality)
+    )
+)
+emphasize.strong.cells(which(abs(c) > 0.3 & c != 1, arr.ind = TRUE))
+pandoc.table(c)
+
+ggplot(data = rwineqa, aes(x = quality, y = fixed.acidity)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data=rwineqa, aes(x = quality, y = volatile.acidity)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data=rwineqa, aes(x=quality, y=citric.acid)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data=rwineqa, aes(x=quality, y=residual.sugar)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  scale_y_continuous(lim = c(0,5)) +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+
+ggplot(data=rwineqa, aes(x=quality, y=chlorides)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  scale_y_continuous(lim = c(0,0.2)) +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data=rwineqa, aes(x=quality, y=free.sulfur.dioxide)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  scale_y_continuous(lim = c(0,40)) +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data=rwineqa, aes(x=quality, y=total.sulfur.dioxide)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  scale_y_continuous(lim = c(0,150)) +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data=rwineqa, aes(x=quality, y=density)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data=rwineqa, aes(x=quality, y=pH)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+ggplot(data = rwineqa, aes(x = fixed.acidity, y = pH)) +
+  geom_point(alpha = 0.3) +
+  scale_x_log10(breaks=seq(5,15,1)) +
+  xlab("Fixed Acidity in Log Scale") +
+  geom_smooth(method="lm")
+
+ggplot(data = rwineqa, aes(x = volatile.acidity, y = pH)) +
+  geom_point(alpha = 0.3) +
+  scale_x_log10(breaks=seq(.1,1,.1)) +
+  xlab("Volatile Acidity in Log Scale") +
+  geom_smooth(method="lm")
+
+ggplot(data = subset(rwineqa, citric.acid > 0), aes(x = citric.acid, y = pH)) +
+  geom_point(alpha = 0.3) +
+  scale_x_log10() +
+  xlab("Citric Acid in Log Scale") +
+  geom_smooth(method="lm")
+
+ggplot(data=rwineqa, aes(x=quality, y=sulphates)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  scale_y_continuous(lim = c(0.25,1)) +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+
+ggplot(data=rwineqa, aes(x=quality, y=alcohol)) +
+  geom_jitter( alpha = .3) +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4)
+
+alcoholQualityLinearModel <- lm(as.numeric(quality) ~ alcohol,
+                       data = rwineqa)
+summary(alcoholQualityLinearModel)
+
+simple_cor_test <- function(x, y) {
+  return(cor.test(x, as.numeric(y))$estimate)
+}
+
+
+
+correlations <- c(
+  simple_cor_test(rwineqa$fixed.acidity, rwineqa$quality),
+  simple_cor_test(rwineqa$volatile.acidity, rwineqa$quality),
+  simple_cor_test(rwineqa$citric.acid, rwineqa$quality),
+  simple_cor_test(log10(rwineqa$residual.sugar), rwineqa$quality),
+  simple_cor_test(log10(rwineqa$chlorides), rwineqa$quality),
+  simple_cor_test(rwineqa$free.sulfur.dioxide, rwineqa$quality),
+  simple_cor_test(rwineqa$total.sulfur.dioxide, rwineqa$quality),
+  simple_cor_test(rwineqa$density, rwineqa$quality),
+  simple_cor_test(rwineqa$pH, rwineqa$quality),
+  simple_cor_test(log10(rwineqa$sulphates), rwineqa$quality),
+  simple_cor_test(rwineqa$alcohol, rwineqa$quality))
+names(correlations) <- c('fixed.acidity', 'volatile.acidity', 'citric.acid',
+                         'log10.residual.sugar',
+                         'log10.chlorides', 'free.sulfur.dioxide',
+                         'total.sulfur.dioxide', 'density', 'pH',
+                         'log10.sulphates', 'alcohol')
+
+correlations
+```
+### Discuta sobre alguns dos relacionamentos observados nesta parte da investigação. Como os atributos de interesse variaram no conjunto de dados?
+No teste de correlacao, os atributos que apresentaram forte correlação com 'quality' foram: 
+1.alcohol 
+2.sulphates(log10)
+3.volatile acidity 
+4.Citric Acid
+
+
+Better wines seem to have lower densities. But then again, this may be due to the higher alcohol content in them.
+
+a. volatile.acidity tem correlação negativa com 'quality'
+b. 'citric.add' em alta concentração pode estar relacionado a bons vinhos.
+c. os bons vinhos também estão relacionado a nível mais altos de 'alcohol' juntamente com baixa 'density', o que é normal determinado pela concentração de açucares que forma o alcool e diminui a densidade
+d. bons vinhos ligados a taxas mais altas de 'sulphates'
+e. 'residual.sugar' não tem influencia na qualidade
+
+
+### Você observou algum relacionamento interessante entre os outros atributos (os que não são de interesse)?
+
+Entre density and alcohol, sendo uma correlacao negativa, pois uma quantidade de alcool indica menos densidade do vinhos, que concentrou menos açucares, 
+e os acidos também apresentaram uma forte correlação com 'pH', estas relações possuim consenso comum.
+
+### Qual foi o relacionamento mais forte encontrado?
+Destaque para 'alcohol' com quality
+
+
+# Seção de Gráficos Multivariados
+
+```{r echo=FALSE, Multivariate_Plots}
+ggplot(data = rwineqa,
+       aes(y = density, x = alcohol,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  scale_color_brewer(type='seq',
+                     guide=guide_legend(title='Qualidade'))
+
+```
+
+Inserindo novos atributos no gráfico e tendo 'alcohol' como uma constante, para entender se os demais atributos inferem na qualidade do vinho
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = sulphates, x = alcohol,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  scale_y_continuous(limits=c(0.3,1.5)) +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                   guide=guide_legend(title='Qualidade'))
+```
+
+Alcohol combinado com maior concentração de 'sulphates' combinam em um bom vinho
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = volatile.acidity, x = alcohol,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                   guide=guide_legend(title='Qualidade'))
+```
+
+'alcohol' com baixa concentração de 'volatile.acidity' contribuem para um bom vinho
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = pH, x = alcohol,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                   guide=guide_legend(title='Qualidade'))
+```
+
+Baixo 'pH' juntamente com concentração alta de 'alcohol' representam bons vinhos.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = residual.sugar, x = alcohol,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                   guide=guide_legend(title='Qualidade'))
+```
+'residual.sugar' tem pouca correlação com nível mais alto de 'alcohol'
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = total.sulfur.dioxide, x = alcohol,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                   guide=guide_legend(title='Qualidade'))
+```
+
+'total.sulfur.dioxide' tem baixa correlação com 'alcohol', mas contribui para bons vinhos
+
+
+Já que acidos tiveram um forte correlação com a qualidade, analisei suas correlações
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = citric.acid, x = volatile.acidity,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                 guide=guide_legend(title='Qualidade'))
+```
+
+
+alta concentração de 'citric.acid' com baixa low 'volatile.acid'  contribuem para um bom vinho.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = fixed.acidity, x = volatile.acidity,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                     guide=guide_legend(title='Qualidade'))
+```
+
+
+baixa correlação, mas concentração baixa de 'fixed.acidity' contribue para um bom vinho
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = rwineqa,
+       aes(y = citric.acid, x = fixed.acidity,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  facet_wrap(~rating) +
+  scale_color_brewer(type='seq',
+                   guide=guide_legend(title='Qualidade'))
+```
+
+baixa correlação também, porém os dois em baixa concentração contribuem melhor para um bom vinho
+
+
+# Análise Multivariada
+
+### Discuta sobre os relacionamentos observados nesta parte da investigação. Quais atributos que fortaleceram os demais na observação das variáveis de interesse?
+A influencia do 'citric.acid' surpreendeu bastante, incluse na correlação com os demais acidos e 
+destaque também para a baixa concentração de 'volatile.acidity'. Alcool continua sendo o atributo de maior influencia, porém relacionado com nível baixo de Sulphates, 
+apresentou um bom indicador de influencia na qualidade dos vinhos.
+
+### Interações surpreendentes e/ou interessantes foram encontradas entre os atributos?
+Destaque para 'ciric.acid' que tanto relacionando com o atributo de forte correlação com qualidade, que é o 'alcohol', nas interações com os demais acidos, também com alta concentração, se mostrou bem influente.
+
+### OPCIONAL: Modelos foram criados usando este conjunto de dados? Discuta sobre os pontos fortes e as limitações do seu modelo.
+
+
+# Gráficos Finais e Sumário
+
+### Primeiro Gráfico
+```{r echo=FALSE, Plot_One}
+ggplot(data=rwineqa, aes(y=alcohol, x=quality)) + 
+  geom_jitter(alpha = .3)  +
+  geom_boxplot(alpha = .5,color = 'purple') +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               color = "red", 
+               shape = 8, 
+               size = 4) +
+  xlab("Qualidade") +
+  ggtitle("Alcool x Qualidade")
+
+```
+
+### Descrição do Primeiro Gráfico
+Alcool demonstrou forte influencia em várias análises e visto que a maior parte dos vinhos tiveram qualidade média, 
+pode-se notar que o alcool teve maior concentração de destaque no meio do gráfico.
+
+
+### Segundo Gráfico
+```{r echo=FALSE, Plot_Two}
+ggplot(data = rwineqa,
+       aes(y = sulphates, x = alcohol,
+           color = quality)) +
+  geom_point(alpha = 0.8, size = 1) +
+  geom_smooth(method = "lm", se = FALSE,size=1)  +
+  scale_y_continuous(limits=c(0.3,1.5)) +
+  ylab("Sulphate") +
+  xlab("Alcohol") +
+  scale_color_brewer(type='seq',
+                     guide=guide_legend(title='Qualidade')) +
+  ggtitle("Alcohol e Sulphates")
+
+```
+
+### Descrição do Segundo Gráfico
+Baixa concentração de Sulphate  também tem destaque na interação com alta concentração de Alcool para produzir vinhos de qualidade.
+A baixo inclinação no eixo horizontal é porque a influencia do Sulphate na qualidade dos vinhos tem poucos níveis de medida em relação ao alcool.
+
+
+### Terceiro Gráfico
+```{r echo=FALSE, Plot_Three}
+
+p1<-
+  ggplot(aes(x = volatile.acidity, y = alcohol), data = rwineqa) +
+  geom_point(aes(color =  rating),size=2)+
+  xlab("volatile acidity") + ylab("alcohol") +
+  ggtitle("Volatile acidity e Alcohol")
+p2<-
+  ggplot(aes(x = sulphates, y = citric.acid), data = rwineqa) +
+  geom_point(aes(color =  rating),size=2)+
+  xlab("sulphates") + ylab("citric acid") +
+  ggtitle("Citric Acid e Sulphates")
+grid.arrange(p1,p2,ncol=1)
+```
+
+Apresentei 4 atributos com fortes representação nos testes em gráficos de dispersão, novamente podemos observar
+como em gráficos anteriores que o nível de Alcohol alto e baixo Sulphates, geram alto impacto na qualidade,
+já o Acido Citrico teve boas iterações com os outros atributos na análise da qualidade, mas nunca com forte correlação.
+
+
+#Reflexão
+
+No meu trabalho após entender quais eram o atributos com forte correlação direta com a qualidade dos vinhos, tendo o Alcohol como ator principal e sabendo que esta propriedade puramente não definiria um bom vinho, procurei explorar a relação destes coma as demais propriedades.
+
+Na análise bivarial, cruzei com vários atributos, encontrei uma interessante relação do Alcohol com maior concentração de Sulfates e um inverso quando relacionado com Volatile Acidity, estes dois atributos para mim tiveram fortes influencias. 
+
+Fiz uma tentativa de investigar a influência dos acidos na qualidade dos vinhos, removendo o atributos de destaque da visão, neste momento achei a influencia do Citric Acid bem interessante.
+
+Visto que boa parte deste conjunto de dados, os vinhos foram classificaos dentro da média de qualidade, procurei pautar minhas decisões primeiramente na média de qualidade, analisando as correlações fortes.
